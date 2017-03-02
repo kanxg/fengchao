@@ -1,5 +1,6 @@
 package com.uumai.crawer.util.shell;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -44,6 +45,7 @@ public class Shell {
         Shell shell=new Shell();
        // String[] cmd = { "/bin/sh", "-c", "mvn install  ; mkdir /installation/upgrade/" };
         System.out.println(shell.exec("ping www.baidu.com"));
-    }
+
+     }
 
 }

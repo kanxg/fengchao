@@ -15,6 +15,8 @@
 
 5. 保存方式：  支持本地文件输出: txt, Excel 格式， MongoDB输出（分布式）
 
+6. 调用appium，monkeytalk来实现app的爬取
+
 
 # 最简单的爬虫：
 
@@ -102,13 +104,13 @@ mvn eclipse:eclipse  or mvn idea:idea   生成项目
 
  1. 当前系统支持5种分布式：
 
-  a)  YARN,  Hadoop 分布式系统
+  a)  YARN,  Hadoop 分布式系统  (整理中)
 
-  b)  Docker 虚拟化分布式
+  b)  Docker 虚拟化分布式  (开源)
 
-  c） Mesos 分布式系统 （未完成）
+  c） Mesos 分布式系统 （整理中）
 
-  d） Apache Storm (旧的系统，已弃用)
+  d） Apache Storm (开源)
 
   e） Standalone  (旧的系统，已弃用)
 

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.uumai.crawler2.util.htmlparse.XpathUtil;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -105,8 +106,9 @@ public class JsonParseHelper {
 	    }else{
 	    	 xpathvaluelist = result.getHtml()
 	 				.xpath(item.getXpath()).all();
+//             xpathvaluelist = new XpathUtil(result.getRawText()).xpath(item.getXpath()).replaceAll()
 	    }
-		
+
 		for(int j=0;j<xpathvaluelist.size();j++){
 			String xpathvalue=xpathvaluelist.get(j);
 			obj.addProperty(item.getXpathName()+j, xpathvalue);
@@ -122,9 +124,12 @@ public class JsonParseHelper {
 			String tempvariable=this.localtempvariablemap.get(item.getFromsource());
 			if(tempvariable==null) return;
 			xpathvalue = new Html(tempvariable).xpath(item.getXpath()).toString();
+            if(xpathvalue==null||"".equals(xpathvalue))
+                xpathvalue = new XpathUtil(tempvariable).xpath(item.getXpath()).toString();
 		}else{
-			xpathvalue = result.getHtml()
-					.xpath(item.getXpath()).toString();
+			xpathvalue = result.getHtml().xpath(item.getXpath()).toString();
+            if(xpathvalue==null||"".equals(xpathvalue))
+                xpathvalue = new XpathUtil(result.getRawText()).xpath(item.getXpath()).toString();
 		}
 		if(xpathvalue==null) return;
 		if(!item.isNotoutput())
@@ -292,17 +297,22 @@ public class JsonParseHelper {
 	}
 	
 	public static void main(String[] a){
+
+
 		UumaiFileUtil UumaiFileUtil=new UumaiFileUtil();
-		String ss=UumaiFileUtil.readfromcache("/home/rock/Downloads/jalan-rajah_10613.html");
+		String ss=UumaiFileUtil.readfromcache("/tmp/1.txt");
+
+
+
 		//String ss="callback_product({ \"market\" : false , \"clothes\" : false , \"merchandise\" : false , \"products\" : [ ] , \"pageBar\" : { \"totalCount\" : 0 , \"totalPage\" : 1 , \"pageNumber\" : 1 , \"pageSize\" : 48}})";
 		 // 创建 Pattern 对象
 //	      Pattern r = Pattern.compile("\\<img src=(.*)\\/\\>");
-	      Pattern r = Pattern.compile("class=\"bluelink\"(.*)</a>");
-
-	      // 现在创建 matcher 对象
-	      Matcher m = r.matcher(ss);
-	      while (m.find( )) {
-	    	   System.out.println(m.group());
-	 	      }  
+//	      Pattern r = Pattern.compile("class=\"bluelink\"(.*)</a>");
+//
+//	      // 现在创建 matcher 对象
+//	      Matcher m = r.matcher(ss);
+//	      while (m.find( )) {
+//	    	   System.out.println(m.group());
+//	 	      }
 	}
 }

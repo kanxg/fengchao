@@ -1,6 +1,7 @@
 package com.uumai.crawer.quartz.download.selenium;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -31,7 +32,7 @@ public class SeleniumActionBot {
         String  value= seleniumActions.getValue();
 
         if("open".equalsIgnoreCase(command)){
-            driver.get(command);
+            driver.get(target);
             return;
         }else if("sleep".equalsIgnoreCase(command)){
         	try {
@@ -42,6 +43,14 @@ public class SeleniumActionBot {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+        } else if("scrolldown".equalsIgnoreCase(command)){
+            JavascriptExecutor jse = (JavascriptExecutor)driver;
+            jse.executeScript("window.scrollBy(0,250)", "");
+            return;
+        } else if("scrollup ".equalsIgnoreCase(command)){
+            JavascriptExecutor jse = (JavascriptExecutor)driver;
+            jse.executeScript("window.scrollBy(0,-250)", "");
+            return;
         }
 
         WebElement webElement=null;
@@ -64,7 +73,6 @@ public class SeleniumActionBot {
             webElement=driver.findElement(By.xpath(target));
         }
 
-
         if("clear".equalsIgnoreCase(command)){
             webElement.clear();
         }else if("sendKeys".equalsIgnoreCase(command)){
@@ -72,6 +80,7 @@ public class SeleniumActionBot {
         }else if("click".equalsIgnoreCase(command)){
             //defalut is click
             webElement.click();
-        } 
+        }
+
     }
 }

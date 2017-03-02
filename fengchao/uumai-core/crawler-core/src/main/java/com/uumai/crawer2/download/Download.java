@@ -11,11 +11,12 @@ public interface Download {
 
     public enum DownloadType{
         java_download, httpclient_download,
-        firefox_download, chrome_download, htmlunit_download,phantomjs_download,
+        firefox_download, chrome_download,phantomjs_download,jbrowser_download,
         emptymockdown,
         openscript_download,
         file_download,
-        shell_download
+        shell_download,
+        groovy_download
     }
     public CrawlerResult download(CrawlerTasker tasker) throws Exception ;
 

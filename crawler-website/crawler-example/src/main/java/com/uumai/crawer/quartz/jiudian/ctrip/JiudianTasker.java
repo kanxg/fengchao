@@ -1,11 +1,11 @@
 package com.uumai.crawer.quartz.jiudian.ctrip;
 
 import com.uumai.crawer.quartz.QuartzCrawlerTasker;
-import com.uumai.crawer.quartz.localdebug.QuartzLocalDebugAppMaster;
+import com.uumai.crawer.quartz.local.QuartzLocalAppMaster;
 import com.uumai.crawer.util.UumaiTime;
 import com.uumai.crawer2.download.CrawlerProxy;
 
-public class JiudianTasker  extends QuartzLocalDebugAppMaster { //QuartzLocalDebugAppMaster{
+public class JiudianTasker  extends QuartzLocalAppMaster { //QuartzLocalAppMaster{
 	@Override
 	public void dobusiness() throws Exception {
  		createonetask(2,"2016-01-22","2016-01-23",1);

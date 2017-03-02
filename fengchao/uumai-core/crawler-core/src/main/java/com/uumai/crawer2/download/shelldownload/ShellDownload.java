@@ -45,4 +45,12 @@ public class ShellDownload implements Download {
         return result;
     }
 
+    public static void main(String[] args) throws  Exception{
+        ShellDownload download=new ShellDownload();
+        CrawlerTasker tasker=new CrawlerTasker();
+        tasker.setUrl("echo  $HOME");
+        String out=download.download(tasker).getRawText().toString();
+        System.out.println(out);
+    }
+
 }

@@ -1,5 +1,9 @@
 package com.uumai.crawer2;
 
+import com.google.gson.JsonObject;
+
+import java.util.List;
+
 /**
  * Created by rock on 8/4/16.
  */

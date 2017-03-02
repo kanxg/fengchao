@@ -8,12 +8,26 @@ import com.uumai.crawer2.CrawlerTasker;
 import com.uumai.crawer2.download.CrawlerProxy;
 import com.uumai.crawer2.download.Download;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.*;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+
+
+
+import javax.net.ssl.*;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
 
 /**
  * Created by kanxg on 14-12-18.
@@ -22,10 +36,15 @@ public class HttpDownload implements Download {
 
     private CrawlerTasker tasker;
 
+    private CookieManager manager;
+
     public HttpDownload(){
         java.net.CookieManager cm = new java.net.CookieManager();
         java.net.CookieHandler.setDefault(cm);
+        manager=cm;
     }
+
+
     private void setCookie(HttpURLConnection urlConnection, List<CrawlerCookie> cookies){
         if(cookies!=null){
             String setcooki="";
@@ -36,12 +55,43 @@ public class HttpDownload implements Download {
             if(setcooki.endsWith(";")){
                 setcooki=setcooki.substring(0,setcooki.length()-1);
             }
-
+            System.out.println("cookie:" + setcooki);
             urlConnection.setRequestProperty("Cookie", setcooki);
 
         }
     }
-    private void setHeader(HttpURLConnection urlConnection){
+    private void setIgnoreSSL(HttpURLConnection urlConnection) {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+            };
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HostnameVerifier allHostsValid = new HostnameVerifier(){
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+
+            };
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+            HttpsURLConnection  conn = (HttpsURLConnection)urlConnection;
+            SSLSocketFactory sslSocketFactory = sc.getSocketFactory();
+            conn.setSSLSocketFactory(sslSocketFactory);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+        private void setHeader(HttpURLConnection urlConnection){
         //set default value
         setDefaultHeader(urlConnection,"User-Agent",
                 "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0");
@@ -67,19 +117,35 @@ public class HttpDownload implements Download {
         if(this.tasker.getRequestHeaderList().size()==0 ) return;
 
         for(String requestHeaderStr: this.tasker.getRequestHeaderList()){
-            String[] requestHeader=requestHeaderStr.split(":");
-            if(requestHeader==null||requestHeader.length!=2) continue;
-            if(!"null".equalsIgnoreCase(requestHeader[1])){
-                if("setConnectTimeout".equalsIgnoreCase(requestHeader[0])) {
-                    urlConnection.setConnectTimeout(new Integer(requestHeader[1]));
+            int splitpos=requestHeaderStr.indexOf(":");
+            if(splitpos>0){
+                String header=requestHeaderStr.substring(0,splitpos);
+                String value=requestHeaderStr.substring(splitpos+1,requestHeaderStr.length());
+                if(!"null".equalsIgnoreCase(value)){
+                    if("setConnectTimeout".equalsIgnoreCase(header)) {
+                        urlConnection.setConnectTimeout(new Integer(value));
 
-                }else if("setReadTimeout".equalsIgnoreCase(requestHeader[0])) {
-                    urlConnection.setReadTimeout(new Integer(requestHeader[1]));
+                    }else if("setReadTimeout".equalsIgnoreCase(header)) {
+                        urlConnection.setReadTimeout(new Integer(value));
 
-                }else{
-                    urlConnection.setRequestProperty(requestHeader[0], requestHeader[1]);
+                    }else{
+                        urlConnection.setRequestProperty(header, value);
+                    }
                 }
             }
+//            String[] requestHeader=requestHeaderStr.split(":");
+//            if(requestHeader==null||requestHeader.length!=2) continue;
+//            if(!"null".equalsIgnoreCase(requestHeader[1])){
+//                if("setConnectTimeout".equalsIgnoreCase(requestHeader[0])) {
+//                    urlConnection.setConnectTimeout(new Integer(requestHeader[1]));
+//
+//                }else if("setReadTimeout".equalsIgnoreCase(requestHeader[0])) {
+//                    urlConnection.setReadTimeout(new Integer(requestHeader[1]));
+//
+//                }else{
+//                    urlConnection.setRequestProperty(requestHeader[0], requestHeader[1]);
+//                }
+//            }
         }
     }
 
@@ -126,12 +192,16 @@ public class HttpDownload implements Download {
 
         setHeader(urlConnection);
 
+        if(urlStr.startsWith("https")){
+            this.setIgnoreSSL(urlConnection);
+        }
+
 
 //        urlConnection.setInstanceFollowRedirects(true);
 //        HttpURLConnection.setFollowRedirects(true);
 
         setCookie(urlConnection,cookies);
-
+//        urlConnection.setRequestProperty("Cookie", "cz-book=4825|4446|8439|843972656; cz-book-think-0=94ca4514; cz-book-think-2=312bf12d; cz-book-think-3=312bf12d57ddeb11; language=zh_CN; JSESSIONID=ada4c8f2-a5c4-44ac-a684-3b9f7cc26a56");
         urlConnection.connect();
 
         int return_code=urlConnection.getResponseCode();
@@ -139,8 +209,10 @@ public class HttpDownload implements Download {
         CrawlerResult crawlerResult=new CrawlerResult();
         crawlerResult.setReturncode(return_code);
         CookieHelper cookieHelper=new CookieHelper();
-        crawlerResult.setCookies(cookies);
-        crawlerResult.addNewCookies(cookieHelper.parseCookies(urlConnection));
+//        crawlerResult.setCookies(cookies);
+//        crawlerResult.addNewCookies(cookieHelper.parseCookies(urlConnection));
+        crawlerResult.addNewCookies(cookieHelper.parseCookies(manager.getCookieStore().getCookies()));
+
         if (return_code >= 300) {
             System.out.println("failed: url:" + url);
             if(return_code== 301 ||return_code==302){
@@ -250,7 +322,7 @@ public class HttpDownload implements Download {
     }
 
 
-    private CrawlerResult doPost(String urlStr,String postdata,List<CrawlerCookie> cookies, Proxy proxy,String incomingencode,boolean follingRedirect)  throws Exception {
+    private CrawlerResult doPost(String Requestmethod,String urlStr,String postdata,List<CrawlerCookie> cookies, Proxy proxy,String incomingencode,boolean follingRedirect)  throws Exception {
         URL url = new URL(urlStr);
         HttpURLConnection urlConnection ;
         if(proxy==null){
@@ -275,8 +347,7 @@ public class HttpDownload implements Download {
         setHeader(urlConnection);
         setCookie(urlConnection,cookies);
 
-
-        urlConnection.setRequestMethod("POST");// 设置请求方法为post
+        urlConnection.setRequestMethod(Requestmethod);// 设置请求方法为post , put
         urlConnection.setDoOutput(true);// 设置此方法,允许向服务器输出内容
 
 
@@ -297,8 +368,9 @@ public class HttpDownload implements Download {
         CookieHelper cookieHelper =new CookieHelper();
         CrawlerResult crawlerResult=new CrawlerResult();
         crawlerResult.setReturncode(return_code);
-        crawlerResult.setCookies(cookies);
-        crawlerResult.addNewCookies(cookieHelper.parseCookies(urlConnection));
+//        crawlerResult.setCookies(cookies);
+//        crawlerResult.addNewCookies(cookieHelper.parseCookies(urlConnection));
+        crawlerResult.addNewCookies(cookieHelper.parseCookies(manager.getCookieStore().getCookies()));
 
 
         if (return_code >= 300) {
@@ -403,12 +475,12 @@ public class HttpDownload implements Download {
     @Override
     public CrawlerResult download(CrawlerTasker tasker) throws Exception {
         this.tasker=tasker;
-        if(tasker.getRequestmethod().equals("POST")){
+        if(tasker.getRequestmethod().equalsIgnoreCase("POST")||tasker.getRequestmethod().equalsIgnoreCase("PUT")){
             if(tasker.getProxy()!=null){
 
-                return doPost(tasker.getUrl(), tasker.getPostdata(),tasker.getCookies(),tasker.getProxy().getproxy(),tasker.getEncoding(),tasker.isFollingRedirect());
+                return doPost(tasker.getRequestmethod(),tasker.getUrl(), tasker.getPostdata(),tasker.getCookies(),tasker.getProxy().getproxy(),tasker.getEncoding(),tasker.isFollingRedirect());
             }
-            return doPost(tasker.getUrl(),tasker.getPostdata(), tasker.getCookies(),null,tasker.getEncoding(), tasker.isFollingRedirect());
+            return doPost(tasker.getRequestmethod(),tasker.getUrl(),tasker.getPostdata(), tasker.getCookies(),null,tasker.getEncoding(), tasker.isFollingRedirect());
 
         }else{
             if(tasker.getProxy()!=null){
@@ -472,20 +544,24 @@ public class HttpDownload implements Download {
             HttpDownload download = new HttpDownload();
 
 
-            String url = "http://proxy.mimvp.com/api/fetch.php?orderid=860160428134258822&num=500&http_type=1,2&anonymous=5&ping_time=1&transfer_time=5&result_fields=1,2,3,4,5,6,7,8,9&result_format=json";
+            String url = "http://weixin.sogou.com/weixin?type=2&ie=utf8&query=%E6%96%B0%E8%A5%BF%E5%85%B0%E7%A7%BB%E6%B0%91&tsn=5&ft=2016-02-01&et=2016-02-31&page=10&ie=utf8";
 //            tasker.setRequestmethod("POST");
 //            tasker.setPostdata("__EVENTTARGET=&__EVENTARGUMENT=&__LASTFOCUS=&__VIEWSTATE=%2FwEPDwUKLTI2NTI5MTc0NA8WDh4IUGFnZVNpemUCMh4FUmFuZ2UCtAEeDlNlbGVjdGVkRmllbGRzBSlBUkVBLFRPUERFR1JFRSxXT1JLWUVBUixXT1JLRlVOMSxTRU5EREFURR4JUGFnZUluZGV4AgEeDVBhZ2VMb2FkQ29pZHMFBzE5OTE3NDkeDVBhZ2VMb2FkRGl2ZHNlHgxUb3RhbFJlY29yZHMCoI0GFgICAQ9kFhYCBA8PFhAeElNwZWNpYWxDb250cm9sTmFtZQUHSk9CTkFNRR4NU2VhcmNoQnRuRmxhZwUDMV81HgVGb2RJRAUBMR4WQ2FuZGlkYXRlRGVmYXVsdFNlYXJjaGUeFElzSGFzQ29tcGFueURpdmlzaW9uZx4IU1FMV2hlcmVlHghTUUxUYWJsZWUeBFRleHRlZBYeZg9kFgJmD2QWBAIBDxBkEBUBEuivt%2BmAieaLqeaQnOe0ouWZqBUBABQrAwFnFgFmZAIDDw8WAh8OBQbliKDpmaQWAh4Hb25jbGljawUXcmV0dXJuIGNvbmZpcm1EZWxDb25kKClkAgEPDxYCHw4FE%2BacgOi%2FkeaQnOe0ouadoeS7tjpkZAICDw8WBB4HVG9vbFRpcAUa5LiK5rW3K%2BehleWjq%2BS7peS4iivnrpfms5UfDgUa5LiK5rW3K%2BehleWjq%2BS7peS4iivnrpfms5VkZAIDDw8WAh8OBQbmn6Xor6IWAh8PBRZyZXR1cm4gRGlmZmVyRnJvbVRvKCk7ZAIEDw8WAh8OBRjkv67mlLnmm7TlpJrmn6Xor6LmnaHku7ZkZAIFD2QWAmYPZBYCAgEPEA8WBh4NRGF0YVRleHRGaWVsZAUETkFNRR4ORGF0YVZhbHVlRmllbGQFBENPSUQeC18hRGF0YUJvdW5kZ2QQFQIG5LiN6ZmQEumYv%2BmHjOW3tOW3tOmbhuWbohUCAAcxOTkxNzQ5FCsDAmdnFgFmZAIGD2QWAmYPZBYCAgEPEGQQFQEG5LiN6ZmQFQEAFCsDAWdkZAIHD2QWAmYPZBYCAgMPZBYKAgcPZBYEZg8PFgQfDgUN6YCJ5oupL%2BS%2FruaUuR8QBQ3pgInmi6kv5L%2Bu5pS5ZGQCAQ8WAh4FVmFsdWUFDemAieaLqS%2Fkv67mlLlkAg8PEA9kFgIeCG9uQ2hhbmdlBUFyZXR1cm4gaXNNQkEoJ2N0cmxTZXJhY2hfVG9wRGVncmVlRnJvbScsJ2N0cmxTZXJhY2hfVG9wRGVncmVlVG8nKWRkZAIUD2QWBGYPDxYEHw4FDemAieaLqS%2Fkv67mlLkfEAUN6YCJ5oupL%2BS%2FruaUuWRkAgEPFgIfFAUN6YCJ5oupL%2BS%2FruaUuWQCFw9kFgRmDw8WBB8OBQ3pgInmi6kv5L%2Bu5pS5HxAFDemAieaLqS%2Fkv67mlLlkZAIBDxYCHxQFDemAieaLqS%2Fkv67mlLlkAiEPZBYEZg8PFgQfDgUN6YCJ5oupL%2BS%2FruaUuR8QBQ3pgInmi6kv5L%2Bu5pS5ZGQCAQ8WAh8UBQ3pgInmi6kv5L%2Bu5pS5ZAIIDw8WAh8OBQbmn6Xor6JkZAILDw8WAh4JTWF4TGVuZ3RoAgpkZAIND2QWAmYPZBYEAgIPDxYCHw4FDO%2B8u%2BehruWumu%2B8vWRkAgQPEGRkFgBkAg4PZBYCZg9kFgRmDw8WAh8OBRLor7fpgInmi6nmlbDmja7vvIFkZAIBDw8WAh8OBQzvvLvnoa7lrprvvL1kZAIPD2QWAmYPZBYGAgEPDxYCHw4FDO%2B8u%2BehruWumu%2B8vWRkAgIPDxYCHw4FBuivreiogGRkAgMPEGQQFQID5LiOA%2BaIlhUCATEBMBQrAwJnZ2RkAhAPZBYCZg9kFgICAQ8WBB4FdmFsdWUFBuS%2FneWtmB8PBVBpZighSXNOdWxsU2VhcmNoKCdjdHJsU2VyYWNoX3R4dFNlYXJjaE5hbWUnLCdjdHJsU2VyYWNoX2RkbFNlYXJjaE5hbWUnKSkgcmV0dXJuO2QCEQ9kFgJmD2QWAgICDxYCHxcFBuehruWummQCBQ9kFgoCAQ8WAh4MVXNlckJ0bldpZHRoGwAAAAAAgEpAAQAAAGQCAw8WAh8YGwAAAAAAgEpAAQAAAGQCBQ8WAh8YGwAAAAAAQFBAAQAAAGQCBw8WAh8YGwAAAAAAQFNAAQAAAGQCCQ8WAh4Fc3R5bGUFFGZsb2F0OmxlZnQ7ZGlzcGxheTo7FgICAQ8WAh8YGwAAAAAAQFRAAQAAAGQCBg8WAh8ZBQ1kaXNwbGF5Om5vbmU7ZAIHDxYCHxkFDmRpc3BsYXk6YmxvY2s7FgoCAQ8QZGQWAQIEZAICDw8WCB4ESXNFTmgeClBQYWdlSW5kZXgCAR8AAjIfBgKgjQZkFgZmDw8WBB4IQ3NzQ2xhc3MFEWN0cmxQYWdpbmF0aW9uQnQwHgRfIVNCAgJkZAIBDw8WBB8cBRFjdHJsUGFnaW5hdGlvbkJ0MB8dAgJkZAICDw8WBB8cBRFjdHJsUGFnaW5hdGlvbkJ0MR8dAgJkZAIDDw8WAh4ISW1hZ2VVcmwFTWh0dHA6Ly9pbWcwMS41MWpvYmNkbi5jb20vaW1laGlyZS9laGlyZTIwMDcvZGVmYXVsdC9pbWFnZS9pbmJveC9saXN0X292ZXIuZ2lmZGQCBA8PFgIfHgVOaHR0cDovL2ltZzAxLjUxam9iY2RuLmNvbS9pbWVoaXJlL2VoaXJlMjAwNy9kZWZhdWx0L2ltYWdlL2luYm94L2RldGFpbF9vdXQuZ2lmZGQCBw8PFggfGmgfGwIBHwACMh8GAqCNBmQWDgIBDw8WCh8OBQMgMSAeD0NvbW1hbmRBcmd1bWVudAUBMR8QBQExHxwFEWN0cmxQYWdpbmF0aW9uQnQwHx0CAmRkAgIPDxYKHw4FAyAyIB8fBQEyHxAFATIfHAURY3RybFBhZ2luYXRpb25CdDEfHQICZGQCAw8PFgofDgUDIDMgHx8FATMfEAUBMx8cBRFjdHJsUGFnaW5hdGlvbkJ0MB8dAgJkZAIEDw8WCh8OBQMgNCAfHwUBNB8QBQE0HxwFEWN0cmxQYWdpbmF0aW9uQnQwHx0CAmRkAgUPDxYKHw4FAyA1IB8fBQE1HxAFATUfHAURY3RybFBhZ2luYXRpb25CdDAfHQICZGQCBg8PFgIfDmVkZAIHDw8WAh8OBQMuLi5kZAIID2QWAmYPZBYMAg0PFgIfGBsAAAAAAIBKQAEAAABkAg8PFgIfGBsAAAAAAIBFQAEAAABkAhEPFgIfGBsAAAAAAIBMQAEAAABkAhMPFgIfGBsAAAAAAIBMQAEAAABkAhUPFgIfGBsAAAAAAAA%2FQAEAAABkAhcPFgIfGBsAAAAAAEBQQAEAAABkAgkPEGQQFRQG5qCH562%2BBuaAp%2BWIqwblubTpvoQJ5bGF5L2P5ZywBuWtpuWOhgzlt6XkvZzlubTpmZAG6IGM6IO9BuS4k%2BS4mgbmiLflj6MG6KGM5LiaDOebruWJjeaciOiWqgzmnJ%2FmnJvmnIjolqoM6IGU57O755S16K%2BdCeWtpuagoeWQjQlJVOaKgOiDvTEJSVTmioDog70yB%2BivreiogDEM566A5Y6G5p2l5rqQEueugOWOhuabtOaWsOaXtumXtAzmipXpgJLml7bpl7QVFAdMQUJFTElEA1NFWANBR0UEQVJFQQlUT1BERUdSRUUIV09SS1lFQVIIV09SS0ZVTjEIVE9QTUFKT1IFSFVLT1UNV09SS0lORFVTVFJZMQ1DVVJSRU5UU0FMQVJZDEVYUEVDVFNBTEFSWQpNT0JJRVBIT05FCVRPUFNDSE9PTAdJVFRZUEUxB0lUVFlQRTIDRkwxBlNPVVJDRQ5MQVNUTU9ESUZZREFURQhTRU5EREFURRQrAxRnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2RkAgsPEA8WBh8RBQVWQUxVRR8SBQRDT0RFHxNnZBAVCQ0tLeivt%2BmAieaLqS0tCeWMuemFjeW6pgblp5PlkI0M6IGM5L2N5ZCN56ewCeWxheS9j%2BWcsAblrabljoYM5bel5L2c5bm06ZmQBuiBjOiDvQzmipXpgJLml7bpl7QVCQANTUFUQ0hJTkdfQUxMMQVDTkFNRQdKT0JOQU1FBEFSRUEJVE9QREVHUkVFCFdPUktZRUFSCFdPUktGVU4xCFNFTkREQVRFFCsDCWdnZ2dnZ2dnZ2RkAg4PEA8WBh8RBQVWQUxVRR8SBQRDT0RFHxNnZBAVCQ0tLeivt%2BmAieaLqS0tCeWMuemFjeW6pgblp5PlkI0M6IGM5L2N5ZCN56ewCeWxheS9j%2BWcsAblrabljoYM5bel5L2c5bm06ZmQBuiBjOiDvQzmipXpgJLml7bpl7QVCQANTUFUQ0hJTkdfQUxMMQVDTkFNRQdKT0JOQU1FBEFSRUEJVE9QREVHUkVFCFdPUktZRUFSCFdPUktGVU4xCFNFTkREQVRFFCsDCWdnZ2dnZ2dnZ2RkAhEPEA8WBh8RBQVWQUxVRR8SBQRDT0RFHxNnZBAVCQ0tLeivt%2BmAieaLqS0tCeWMuemFjeW6pgblp5PlkI0M6IGM5L2N5ZCN56ewCeWxheS9j%2BWcsAblrabljoYM5bel5L2c5bm06ZmQBuiBjOiDvQzmipXpgJLml7bpl7QVCQANTUFUQ0hJTkdfQUxMMQVDTkFNRQdKT0JOQU1FBEFSRUEJVE9QREVHUkVFCFdPUktZRUFSCFdPUktGVU4xCFNFTkREQVRFFCsDCWdnZ2dnZ2dnZ2RkAhYPDxYCHg1PbkNsaWVudENsaWNrBS9qYXZhc2NyaXB0OnJldHVybiBPcGVuSW5ib3hDb21tb25MYXllcignVE9IUicpO2RkAhkPDxYCHyAFMGphdmFzY3JpcHQ6cmV0dXJuIE9wZW5JbmJveENvbW1vbkxheWVyKCdUT0hSUycpO2RkGAEFHl9fQ29udHJvbHNSZXF1aXJlUG9zdEJhY2tLZXlfXxYyBRRjdHJsU2VyYWNoJGNoa1R3b0FsbAUZY3RybFNlcmFjaCRjaGtUd29TZWxlY3QkMAUWY3RybFNlcmFjaCRjaGtTZWxlY3QkMAUSY3RybFNlcmFjaCRjaGtGTCQwBRZjdHJsU2VyYWNoJGNoa19kZWZhdWx0BQdpbWdEaXMxBQdpbWdEaXMyBQxjYnhDb2x1bW5zJDAFDGNieENvbHVtbnMkMQUMY2J4Q29sdW1ucyQyBQxjYnhDb2x1bW5zJDMFDGNieENvbHVtbnMkNAUMY2J4Q29sdW1ucyQ1BQxjYnhDb2x1bW5zJDYFDGNieENvbHVtbnMkNwUMY2J4Q29sdW1ucyQ4BQxjYnhDb2x1bW5zJDkFDWNieENvbHVtbnMkMTAFDWNieENvbHVtbnMkMTEFDWNieENvbHVtbnMkMTIFDWNieENvbHVtbnMkMTMFDWNieENvbHVtbnMkMTQFDWNieENvbHVtbnMkMTUFDWNieENvbHVtbnMkMTYFDWNieENvbHVtbnMkMTcFDWNieENvbHVtbnMkMTgFDWNieENvbHVtbnMkMTkFDWNieENvbHVtbnMkMTkFCFNvcnRBc2MxBQlTb3J0RGVzYzEFCVNvcnREZXNjMQUIU29ydEFzYzIFCVNvcnREZXNjMgUJU29ydERlc2MyBQhTb3J0QXNjMwUJU29ydERlc2MzBQlTb3J0RGVzYzMFEmN0bEV4cG9ydDEkcmRiV29yZAUSY3RsRXhwb3J0MSRyZGJXb3JkBRNjdGxFeHBvcnQxJHJkYkV4Y2VsBRNjdGxFeHBvcnQxJHJkYkV4Y2VsBRJjdGxFeHBvcnQxJHJkYkh0bWwFEmN0bEV4cG9ydDEkcmRiSHRtbAUUY3RsRXhwb3J0MSRyZGJBY2Nlc3MFFGN0bEV4cG9ydDEkcmRiQWNjZXNzBRZjdGxFeHBvcnQxJHJkYkRvd25sb2FkBRZjdGxFeHBvcnQxJHJkYkRvd25sb2FkBRNjdGxFeHBvcnQxJHJkYkVtYWlsBRNjdGxFeHBvcnQxJHJkYkVtYWlsBQpjaGtJbmNsSGlz&MainMenuNew1%24CurMenuID=MainMenuNew1_imgApp%7Csub3&hidTab=&ctrlSerach%24ddlSearchName=&ctrlSerach%24dropCoid=&ctrlSerach%24dropDivision=&ctrlSerach%24hidSearchID=1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9&ctrlSerach%24KEYWORD=--%E5%8F%AF%E9%80%89%E6%8B%A9%E2%80%9C%E5%B7%A5%E4%BD%9C%E3%80%81%E9%A1%B9%E7%9B%AE%E3%80%81%E8%81%8C%E5%8A%A1%E3%80%81%E5%AD%A6%E6%A0%A1%E2%80%9D%E5%85%B3%E9%94%AE%E5%AD%97--&ctrlSerach%24KEYWORDTYPE=1&ctrlSerach%24AREA%24Text=%E9%80%89%E6%8B%A9%2F%E4%BF%AE%E6%94%B9&ctrlSerach%24AREA%24Value=&ctrlSerach%24SEX=2&ctrlSerach%24TopDegreeFrom=&ctrlSerach%24TopDegreeTo=&ctrlSerach%24WORKFUN1%24Text=%E9%80%89%E6%8B%A9%2F%E4%BF%AE%E6%94%B9&ctrlSerach%24WORKFUN1%24Value=&ctrlSerach%24WORKINDUSTRY1%24Text=%E9%80%89%E6%8B%A9%2F%E4%BF%AE%E6%94%B9&ctrlSerach%24WORKINDUSTRY1%24Value=&ctrlSerach%24WorkYearFrom=0&ctrlSerach%24WorkYearTo=99&ctrlSerach%24TOPMAJOR%24Text=%E9%80%89%E6%8B%A9%2F%E4%BF%AE%E6%94%B9&ctrlSerach%24TOPMAJOR%24Value=&ctrlSerach%24AgeFrom=&ctrlSerach%24AgeTo=&ctrlSerach%24txtUserID=-%E5%A4%9A%E4%B8%AA%E7%AE%80%E5%8E%86ID%E7%94%A8%E7%A9%BA%E6%A0%BC%E9%9A%94%E5%BC%80-&ctrlSerach%24txtMobile=&ctrlSerach%24txtName=&ctrlSerach%24txtMail=&ctrlSerach%24hidTwoValue=&ctrlSerach%24radFandF=0&ctrlSerach%24txtSearchName=&dropRecentResumeRange=180&pagerBottom%24btnNum1=+1+&pagerBottom%24txtGO=2&cbxColumns%243=AREA&cbxColumns%244=TOPDEGREE&cbxColumns%245=WORKYEAR&cbxColumns%246=WORKFUN1&cbxColumns%2419=SENDDATE&Keyword1=&1=SortAsc1&Keyword2=&2=SortAsc2&Keyword3=&3=SortAsc3&inboxTypeFlag=5&ShowFrom=1&hidEvents=&hidSeqID=&hidUserID=&hidFolder=EMP&BAK2INT=&hidJobID=&SubmitValue=&hidDisplayType=0&hidOrderByCol=&hidSearchHidden=&hidBatchBtn=&hidProcessType=&hidEngineCvlogIds=7835430274%7C0%7C1%2C7835425477%7C0%7C2%2C7835425010%7C0%7C3%2C7835424645%7C0%7C4%2C7835423003%7C0%7C5%2C7835418744%7C0%7C6%2C7835410311%7C0%7C7%2C7835402986%7C0%7C8%2C7835401711%7C0%7C9%2C7835399726%7C0%7C10%2C7835398713%7C0%7C11%2C7835398582%7C0%7C12%2C7835395319%7C0%7C13%2C7835384773%7C0%7C14%2C7835382539%7C0%7C15%2C7835382361%7C0%7C16%2C7835369129%7C0%7C17%2C7835363746%7C0%7C18%2C7835362574%7C0%7C19%2C7835359889%7C0%7C20%2C7835358489%7C0%7C21%2C7835348298%7C0%7C22%2C7835347782%7C0%7C23%2C7835346174%7C0%7C24%2C7835343090%7C0%7C25%2C7835338600%7C0%7C26%2C7835337097%7C0%7C27%2C7835335934%7C0%7C28%2C7835328748%7C0%7C29%2C7835328168%7C0%7C30%2C7835327729%7C0%7C31%2C7835324383%7C0%7C32%2C7835323080%7C0%7C33%2C7835322506%7C0%7C34%2C7835319882%7C0%7C35%2C7835317235%7C0%7C36%2C7835314006%7C0%7C37%2C7835313081%7C0%7C38%2C7835312896%7C0%7C39%2C7835310983%7C0%7C40%2C7835310457%7C0%7C41%2C7835309524%7C0%7C42%2C7835305490%7C0%7C43%2C7835305451%7C0%7C44%2C7835302587%7C0%7C45%2C7835302116%7C0%7C46%2C7835301022%7C0%7C47%2C7835299237%7C0%7C48%2C7835297117%7C0%7C49%2C7835294671%7C0%7C50%2C7835291057%7C0%7C51%2C7835288121%7C0%7C52%2C7835288028%7C0%7C53%2C7835286593%7C0%7C54%2C7835282685%7C0%7C55%2C7835281870%7C0%7C56%2C7835275040%7C0%7C57%2C7835265588%7C0%7C58%2C7835265117%7C0%7C59%2C7835263090%7C0%7C60%2C7835262921%7C0%7C61%2C7835247132%7C0%7C62%2C7835245239%7C0%7C63%2C7835242824%7C0%7C64%2C7835240795%7C0%7C65%2C7835236802%7C0%7C66%2C7835234605%7C0%7C67%2C7835227443%7C0%7C68%2C7835227081%7C0%7C69%2C7835226001%7C0%7C70%2C7835225417%7C0%7C71%2C7835212212%7C0%7C72%2C7835210409%7C0%7C73%2C7835197919%7C0%7C74%2C7835186313%7C0%7C75%2C7835175136%7C0%7C76%2C7835173199%7C0%7C77%2C7835172154%7C0%7C78%2C7835166947%7C0%7C79%2C7835165193%7C0%7C80%2C7835159115%7C0%7C81%2C7835158251%7C0%7C82%2C7835154344%7C0%7C83%2C7835151968%7C0%7C84%2C7835151349%7C0%7C85%2C7835148944%7C0%7C86%2C7835147585%7C0%7C87%2C7835143898%7C0%7C88%2C7835143429%7C0%7C89%2C7835143203%7C0%7C90%2C7835139807%7C0%7C91%2C7835136815%7C0%7C92%2C7835136357%7C0%7C93%2C7835135937%7C0%7C94%2C7835133283%7C0%7C95%2C7835131243%7C0%7C96%2C7835125624%7C0%7C97%2C7835123485%7C0%7C98%2C7835123042%7C0%7C99%2C7835121188%7C0%7C100&hidUserDistinct=0");
-//            List<CrawlerCookie> zhaopin_cookie=new  CookieHelper().readcookiefromfile(new File(UumaiProperties.getUUmaiHome() + "/cookies/cloudinfotech_51job_cookies.txt"));
+//            List<CrawlerCookie> zhaopin_cookie=new  CookieHelper().readcookiefromString("cz-book-think-3=3945f15ddd9dff75;cz-book-think-2=3945f15d;cz-book-think-1=2e8e8f14;cz-book=7229|2594|6532|6532309002;language=zh_CN");
 //            tasker.setCookies(zhaopin_cookie);
             tasker.setUrl(url);
+            tasker.addRequestHeader("Referer", " https://item.taobao.com/item.htm");
 
             tasker.setTaskerOwner("rock");
-
+//            tasker.addRequestHeader("Accept-Encoding","deflate, br");
              tasker.setTaskerName("uumai_quartz_cmbbnc_test");
 
-//            tasker.setProxy(new CrawlerProxy("cn-proxy.jp.oracle.com", 80));
-            String html=download.download(tasker).getRawText();
-            System.out.print("html:"+html);
+            tasker.setProxy(new CrawlerProxy("cn-proxy.jp.oracle.com", 80));
+
+            CrawlerResult result=download.download(tasker);
+
+            System.out.println("return code:" + result.getReturncode());
+            System.out.println("html:"+result.getRawText());
 
 
         }

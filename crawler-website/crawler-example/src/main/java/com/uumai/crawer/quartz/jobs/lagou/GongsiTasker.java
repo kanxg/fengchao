@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uumai.crawer.quartz.QuartzCrawlerTasker;
- import com.uumai.crawer.quartz.localdebug.QuartzLocalDebugAppMaster;
+ import com.uumai.crawer.quartz.local.QuartzLocalAppMaster;
 import com.uumai.crawer.quartz.util.QuartzQueryItem;
  import com.uumai.crawer.util.UumaiTime;
  import com.uumai.crawer2.CookieManager.CrawlerCookie;
 import com.uumai.crawer2.download.CrawlerProxy;
 
-public class GongsiTasker  extends QuartzLocalDebugAppMaster { //QuartzLocalDebugAppMaster {// AbstractAppMaster {
+public class GongsiTasker  extends QuartzLocalAppMaster { //QuartzLocalAppMaster {// AbstractAppMaster {
  	
 	@Override
 	public void dobusiness() throws Exception {

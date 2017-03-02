@@ -44,6 +44,8 @@ public class SeleniumCookieHeper {
             }
 
             WebDriver.Options manage = webDriver.manage();
+            webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+            webDriver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
 
 //            if(tasker.getCookies()!=null){
 //                //             split cookie string
@@ -62,8 +64,7 @@ public class SeleniumCookieHeper {
             if(urllist!=null) {
                 for (String url : urllist) {
                     webDriver.get(url);
-                    webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-                }
+                 }
             }
             // Wait for the page to load, timeout after 10 seconds
 //            (new WebDriverWait(webDriver, 10)).until(new ExpectedCondition<Boolean>() {

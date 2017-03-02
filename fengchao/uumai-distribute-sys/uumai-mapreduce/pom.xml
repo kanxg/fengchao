@@ -35,7 +35,7 @@
      <dependencies>
          <dependency>
               <groupId>com.uumai</groupId>
-            <artifactId>uumai-crawler-multi-core</artifactId>
+            <artifactId>uumai-crawler-core</artifactId>
             <version>1.0</version>
         </dependency>
 

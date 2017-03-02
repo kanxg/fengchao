@@ -1,0 +1,77 @@
+kill
+storm kill uumaiTopology
+
+==================quartz==================
+build:
+cd /home/rock/kanxg/Dropbox/mysourcecode/uumai/bitbucket
+./bin/buildfengchao.sh
+
+
+run server
+storm jar ./crawler-website/crawler-quartz/target/crawler-quartz-1.0-jar-with-dependencies.jar com.uumai.storm.topology.UumaiTopology quartz remote 9
+
+ 
+====================================================================================
+
+
+
+----run product----
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.jobs.github.ReposListTasker github_reposlist.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.jobs.github.UserListTasker github_userlist.log
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.jobs.github.UserTasker github_user.log
+
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.jobs.lagou.GongsiTasker lagou_gongsi.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.jobs.lagou.JobTasker lagou_jobs.log
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.amazoncn.RunAll amazoncnall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.dangdang.RunAll dangdangall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.gome.RunAll gomeall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.jd.RunAll jdall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.suning.RunAll suningall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.yhd.RunAll yhdall.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.uumai.yixun.RunAll yixunall.log
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.amazon.us.RunAll amazonall.log
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.eastmoney.RunAll eastmoney.log
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.xueqiu.RunAll xueqiu.log
+
+--haitao----
+
+/home/rock/uumai/build/fengchao/uumaiQuartz.sh com.uumai.crawer.quartz.haitao.drugstore.RunAll drugstore.log
+
+
+ -------export png file------------------
+ cd /home/rock/uumai/build/fengchao
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  amazoncn 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  dangdang 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  gome 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  jd 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  suning 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  yhd 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.PngFileHelper  yixun 1
+ 
+
+
+./uumaiQuartz.sh com.uumai.crawer.quartz.eastmoney.RunAll	      eastmoney.log
+
+./uumaiQuartz.sh com.uumai.crawer.quartz.xueqiu.RunAll	      Xueqiu.log
+
+
+--------------export mongo file-----------------------
+cd /home/rock/uumai/build/fengchao
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  amazoncn 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  dangdang 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  gome 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  jd 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  suning 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  yhd 1
+./uumai.sh com.uumai.crawer.quartz.uumai.uumaimerge.mongo2file.DB2File  yixun 1
+
+
+------------import-- mongo file---------------
+cd /home/rock/uumai/build/yiqun
+./uumai.sh  com.uumai.crawer.quartz.uumai.uumaimerge.es.SolrFromFileUtil
+

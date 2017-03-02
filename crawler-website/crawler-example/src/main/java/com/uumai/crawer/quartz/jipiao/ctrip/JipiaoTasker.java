@@ -6,13 +6,13 @@ import java.util.List;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.uumai.crawer.quartz.QuartzCrawlerTasker;
-import com.uumai.crawer.quartz.localdebug.QuartzLocalDebugAppMaster;
+import com.uumai.crawer.quartz.local.QuartzLocalAppMaster;
 import com.uumai.crawer.quartz.util.QuartzQueryItem;
 import com.uumai.crawer.util.UumaiTime;
 import com.uumai.crawer2.download.CrawlerProxy;
 import com.uumai.crawer2.download.Download.DownloadType;
 
-public class JipiaoTasker extends QuartzLocalDebugAppMaster { //QuartzLocalDebugAppMaster{
+public class JipiaoTasker extends QuartzLocalAppMaster { //QuartzLocalAppMaster{
  
 	@Override
 	public void dobusiness() throws Exception {

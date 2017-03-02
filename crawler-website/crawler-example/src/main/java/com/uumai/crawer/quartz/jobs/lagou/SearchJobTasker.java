@@ -1,11 +1,11 @@
 package com.uumai.crawer.quartz.jobs.lagou;
 
 import com.uumai.crawer.quartz.QuartzCrawlerTasker;
-import com.uumai.crawer.quartz.localdebug.QuartzLocalDebugAppMaster;
+import com.uumai.crawer.quartz.local.QuartzLocalAppMaster;
  import com.uumai.crawer.util.UumaiTime;
 import com.uumai.crawer2.download.CrawlerProxy;
 
-public class SearchJobTasker extends QuartzLocalDebugAppMaster {// AbstractAppMaster {
+public class SearchJobTasker extends QuartzLocalAppMaster {// AbstractAppMaster {
  	
 	@Override
 	public void dobusiness() throws Exception {

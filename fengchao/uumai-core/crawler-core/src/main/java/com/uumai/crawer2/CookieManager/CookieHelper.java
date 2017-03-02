@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.util.*;
 
@@ -13,8 +14,24 @@ import java.util.*;
  * Created by rock on 12/7/15.
  */
 public class CookieHelper {
+    public   List<CrawlerCookie>    parseCookies(List<HttpCookie> httpcookies) {
+        List<CrawlerCookie> cookies=new ArrayList<CrawlerCookie>();
+        for(HttpCookie httpcookie:httpcookies){
+            CrawlerCookie crawlerCookie=new CrawlerCookie();
+            crawlerCookie.setName(httpcookie.getName());
+            crawlerCookie.setValue(httpcookie.getValue());
+            crawlerCookie.setPath(httpcookie.getPath());
+            crawlerCookie.setHttpOnly(httpcookie.isHttpOnly());
+            crawlerCookie.setDomain(httpcookie.getDomain());
+            crawlerCookie.setSecure(httpcookie.getSecure());
+//            crawlerCookie.setExpiry(httpcookie.get);
+            cookies.add(crawlerCookie);
+        }
+        return cookies;
 
-    public   List<CrawlerCookie> parseCookies(HttpURLConnection conn) {
+    }
+
+        public   List<CrawlerCookie>    parseCookies(HttpURLConnection conn) {
         List<CrawlerCookie> cookies=new ArrayList<CrawlerCookie>();
         String headerName=null;
         for (int i=1; (headerName = conn.getHeaderFieldKey(i))!=null; i++) {
@@ -33,7 +50,20 @@ public class CookieHelper {
             }
         }
 
-        return cookies;
+
+//        List<String> cookiesHeader =conn.getHeaderFields().get("Set-Cookie");  //conn.getHeaderField("Set-Cookie");
+//        for(String cookie:cookiesHeader){
+//            if(cookie.indexOf(";")>=0 && cookie.indexOf("=")>0) {
+//                cookie = cookie.substring(0, cookie.indexOf(";"));
+//                String cookieName = cookie.substring(0, cookie.indexOf("="));
+//                String cookieValue = cookie.substring(cookie.indexOf("=") + 1, cookie.length());
+//                CrawlerCookie crawlerCookie = new CrawlerCookie();
+//                crawlerCookie.setName(cookieName);
+//                crawlerCookie.setValue(cookieValue);
+//                cookies.add(crawlerCookie);
+//            }
+//        }
+         return cookies;
     }
 
     public   List<CrawlerCookie> parseCookies(WebDriver webDriver) {
@@ -128,6 +158,18 @@ public class CookieHelper {
                 cookie.setName(splittexts[4]);
                 cookie.setValue(splittexts[5]);
                 cookies.add(cookie);
+            }
+        }
+        if(cookies.size()==0){
+            String[] ssline= filecontent.split(";");
+            for(String s:ssline) {
+                String[] splittexts = s.split("=");
+                if(splittexts.length==2){
+                    CrawlerCookie cookie=new CrawlerCookie();
+                    cookie.setName(splittexts[0].trim());
+                    cookie.setValue(splittexts[1].trim());
+                    cookies.add(cookie);
+                }
             }
         }
         return cookies;

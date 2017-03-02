@@ -1,0 +1,64 @@
+run slave worker in local:
+cd /home/rock/kanxg/Dropbox/mysourcecode/uumai/bitbucket/build
+./uumaiSlaves.sh
+./uumaiSlaves.sh  -debug
+
+
+
+run amazon master:
+cd /home/rock/kanxg/Dropbox/mysourcecode/uumai/bitbucket/build
+./uumaiMaster.sh  amazon clean
+./uumaiMaster.sh  amazon
+
+
+run keepa master
+cd /home/rock/kanxg/Dropbox/mysourcecode/uumai/bitbucket/build
+./uumaiMaster.sh keepa clean
+./uumaiMaster.sh keepa
+
+
+
+
+
+=======test==================  :
+./uumai.sh com.uumai.crawer2.MasterRuner com.uumai.crawer.client.TestAppMaster  
+
+Kill :
+./bin/stopapp.sh TestAppMaster TestAppSlave
+./bin/stopappmaster.sh TestAppMaster
+./bin/stopappslaves.sh TestAppSlave
+
+
+====amazon=====
+./runallslaves.sh com.uumai.crawer.amazon.AmazonAppSlave  amazon.log
+./killslaves.sh AmazonAppSlave
+
+
+Run  :
+./bin/runapp.sh  com.uumai.crawer.amazon.AmazonAppMaster amazonMaster.log  com.uumai.crawer.amazon.AmazonAppSlave  amazon.log
+./bin/runappmaster.sh com.uumai.crawer.amazon.AmazonAppMaster amazonMaster.log
+./bin/runappslaves.sh com.uumai.crawer.amazon.AmazonAppSlave  amazon.log
+
+Kill :
+./bin/stopapp.sh AmazonAppMaster AmazonAppSlave
+./bin/stopappmaster.sh AmazonAppMaster
+./bin/stopappslaves.sh AmazonAppSlave
+
+
+=======keepa==================
+./runallslaves.sh com.uumai.crawer.keepa.KeepaAppSlave 
+ ./killslaves.sh KeepaAppSlave
+
+
+=======jd==================
+./runallslaves.sh com.uumai.crawer.jd.JdAppSlave
+./killslaves.sh JdAppSlave
+
+
+=======xueqiu==================
+Run Slaves:
+./runallslaves.sh com.uumai.crawer.xueqiu.XueqiuAppSlave 3 -1 ./logs/xueqiu.log
+Run Master:
+./uumai.sh "" com.uumai.crawer.xueqiu.XueqiuAppMaster  3 -1 ./logs/xueqiuMaster.log
+Kill Slaves:
+./killslaves.sh	XueqiuAppSlave 

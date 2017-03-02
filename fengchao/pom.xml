@@ -19,8 +19,6 @@
 
         <module>uumai-core</module>
 
-         <module>uumai-multiserver</module>
-
         <module>uumai-distribute-sys</module>
 
      </modules>

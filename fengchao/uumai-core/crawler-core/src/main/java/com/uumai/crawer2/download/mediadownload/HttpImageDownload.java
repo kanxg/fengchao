@@ -6,6 +6,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import com.uumai.crawer2.download.CrawlerProxy;
 import org.apache.http.HttpHost;
 
 /**
@@ -13,24 +14,9 @@ import org.apache.http.HttpHost;
  */
 public class HttpImageDownload {
 
-    private static String cookie="__uuid=1452860341172.75; gr_user_id=1b8f68ff-1e91-43e9-b135-6c7f474a5f50; _uuid=45397E08FFA8420B3A5434706777DCC2; Hm_lvt_a2647413544f5a04f00da7eee0d5e200=1452860342,1453009619; user_login=641400585%40qq.com; user_kind=2; user_photo=559a41170cf234f5b592aa5403a.jpg; _fecdn_=1; __uv_seq=14; user_name=%E5%BC%A0%E4%BD%B3%E8%8E%B9; user_id=20888723; lt_auth=6uYMP3VQzQ%2BtsnDaiGVZ468f3d2vBm3P8HsKh0tVh9HvX6W24PziSwOPqbMExBEhwxMmf8ULNbX9%0D%0ANez9y3ZP60YW%0D%0A; verifycode=7b2134a119e4478d8975e3596568e855; __tlog=1452860341173.48%7C00000000%7C00000000%7C00000000%7C00000000; __session_seq=24; _mscid=00000000; Hm_lpvt_a2647413544f5a04f00da7eee0d5e200=1453043262; beta2_msg_closed=1; JSESSIONID=AE60A6338102892C5755C1570E7B7890; gr_session_id=2a4b22c1-d0ce-4340-9782-02cf566ac5f4";
+    private static String cookie; // ="__uuid=1452860341172.75; gr_user_id=1b8f68ff-1e91-43e9-b135-6c7f474a5f50; _uuid=45397E08FFA8420B3A5434706777DCC2; Hm_lvt_a2647413544f5a04f00da7eee0d5e200=1452860342,1453009619; user_login=641400585%40qq.com; user_kind=2; user_photo=559a41170cf234f5b592aa5403a.jpg; _fecdn_=1; __uv_seq=14; user_name=%E5%BC%A0%E4%BD%B3%E8%8E%B9; user_id=20888723; lt_auth=6uYMP3VQzQ%2BtsnDaiGVZ468f3d2vBm3P8HsKh0tVh9HvX6W24PziSwOPqbMExBEhwxMmf8ULNbX9%0D%0ANez9y3ZP60YW%0D%0A; verifycode=7b2134a119e4478d8975e3596568e855; __tlog=1452860341173.48%7C00000000%7C00000000%7C00000000%7C00000000; __session_seq=24; _mscid=00000000; Hm_lpvt_a2647413544f5a04f00da7eee0d5e200=1453043262; beta2_msg_closed=1; JSESSIONID=AE60A6338102892C5755C1570E7B7890; gr_session_id=2a4b22c1-d0ce-4340-9782-02cf566ac5f4";
 
 
-    public static void main(String[] args) {
-
-        HttpImageDownload download=new HttpImageDownload();
-
-//        download.downloadPicture("http://img12.360buyimg.com/da/jfs/t2092/235/2038857536/59672/af6f6abc/56989958N1767c3be.jpg",
-//                null,null,"/home/rock/Downloads/jd.jpg");
-//        download.downloadPicture("http://h.liepin.com/image/createimg/?type=00&linkinfo=5672694189p3096668867|1",
-//             cookie,null,"/home/rock/Downloads/liepin.jpg");
-
-        download.downloadPicture("http://h.liepin.com/image/createimg/?type=11&linkinfo=5672694189p3096668867|1",
-             cookie,null,"/home/rock/Downloads/email.jpg");
-
-//        download.downloadPicture("http://h.liepin.com/weixin/getbindedqrcodes/?userc_id=25566059",
-//                cookie,null,"/home/rock/Downloads/weixin.png");
-    }
 
 
     public  void downloadPicture(String urlStr, String cookie,Proxy proxy,
@@ -122,4 +108,24 @@ public class HttpImageDownload {
             }
         }
     }
+
+    public static void main(String[] args) {
+
+        HttpImageDownload download=new HttpImageDownload();
+
+//        download.downloadPicture("http://img12.360buyimg.com/da/jfs/t2092/235/2038857536/59672/af6f6abc/56989958N1767c3be.jpg",
+//                null,null,"/home/rock/Downloads/jd.jpg");
+//        download.downloadPicture("http://h.liepin.com/image/createimg/?type=00&linkinfo=5672694189p3096668867|1",
+//             cookie,null,"/home/rock/Downloads/liepin.jpg");
+
+        CrawlerProxy proxy=null;
+        proxy=new CrawlerProxy("rn-proxy.oracle.com", 80);
+
+        download.downloadPicture("https://anf.scene7.com/is/image/anf/anf_105376_01_prod1?$product-anf-v1$&wid=800&hei=1000",
+                null,proxy.getproxy(),"/tmp/1.jpeg");
+
+//        download.downloadPicture("http://h.liepin.com/weixin/getbindedqrcodes/?userc_id=25566059",
+//                cookie,null,"/home/rock/Downloads/weixin.png");
+    }
+
 }

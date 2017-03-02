@@ -1,6 +1,7 @@
 package com.uumai.crawler2.util.htmlparse;
 
 
+import com.uumai.crawler.selector.Html;
 import org.htmlcleaner.*;
 import org.jsoup.nodes.Document;
 import org.w3c.dom.NodeList;
@@ -21,13 +22,17 @@ import java.util.List;
 public class XpathUtil {
     String rawText;
 
-    String  baseUri;
-    private Document doc;
+//    String  baseUri;
+//    private Document doc;
 
-    public XpathUtil(    String rawText,String  baseUri){
+    public XpathUtil(    String rawText){
         this.rawText=rawText;
-        this.baseUri=baseUri;
     }
+
+//    public XpathUtil(    String rawText,String  baseUri){
+//        this.rawText=rawText;
+//        this.baseUri=baseUri;
+//    }
     public String  xpath(String XPath){
         if(XPath.endsWith("/text()")){
             return xpathwithText(XPath.substring(0,XPath.length()-7));
@@ -109,8 +114,10 @@ public class XpathUtil {
         while ((line = reader.readLine()) != null) {
             buffer.append(line);
         }
-        XpathUtil xpathutil=new XpathUtil(buffer.toString(), "www.amazon.com");
-        String href= xpathutil.xpath("//span[@class='SearchR']/a/@href").toString();
+//        System.out.println(buffer.toString());
+        String href = new Html(buffer.toString()).xpath("//div").toString();
+//        XpathUtil xpathutil=new XpathUtil(buffer.toString());
+//        String href= xpathutil.xpath("//div[@mid='4078106945964593']//a[@nick-name]/text()").toString();
         System.out.println("href:"+ href);
 
     }

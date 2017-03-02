@@ -2,6 +2,7 @@ package com.uumai.crawer2.download;
 
 import com.uumai.crawer2.download.emptymock.EmptyMockDownload;
 import com.uumai.crawer2.download.filedownload.FileDownload;
+import com.uumai.crawer2.download.groovydownload.GroovyShellDownload;
 import com.uumai.crawer2.download.httpclient.HttpClientDownload;
 import com.uumai.crawer2.download.httpdownload.HttpDownload;
 import com.uumai.crawer2.download.selenium.SeleniumDownloader;
@@ -30,10 +31,12 @@ public class DownloadFactory {
             return new FileDownload();
         }else if(type== Download.DownloadType.shell_download){
             return new ShellDownload();
-        }else if(type== Download.DownloadType.htmlunit_download){
-            return new SeleniumDownloader();
         }else if(type== Download.DownloadType.phantomjs_download){
             return new SeleniumDownloader();
+        }else if(type== Download.DownloadType.jbrowser_download){
+            return new SeleniumDownloader();
+        }else if(type== Download.DownloadType.groovy_download){
+            return new GroovyShellDownload();
         }
         return new HttpDownload();
     }

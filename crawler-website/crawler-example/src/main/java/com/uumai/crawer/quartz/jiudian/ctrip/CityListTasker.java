@@ -1,10 +1,10 @@
 package com.uumai.crawer.quartz.jiudian.ctrip;
 
 import com.uumai.crawer.quartz.QuartzCrawlerTasker;
-import com.uumai.crawer.quartz.localdebug.QuartzLocalDebugAppMaster;
+import com.uumai.crawer.quartz.local.QuartzLocalAppMaster;
 import com.uumai.crawer.util.UumaiTime;
 
-public class CityListTasker  extends QuartzLocalDebugAppMaster { //QuartzLocalDebugAppMaster{
+public class CityListTasker  extends QuartzLocalAppMaster { //QuartzLocalAppMaster{
 	@Override
 	public void dobusiness() throws Exception {
  		createonetask("http://hotels.ctrip.com/domestic-city-hotel.html");

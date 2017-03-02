@@ -1,5 +1,7 @@
 package com.uumai.crawer.util.filesystem;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -69,8 +71,9 @@ public class ExcelFileUtil {
             String s=inputStr.get(i);
             Cell cell = row.createCell(i);
              //设置方格的显示
+            cell.setCellType(HSSFCell.CELL_TYPE_STRING);
             cell.setCellValue(s);
-        }
+         }
 
     }
 
@@ -87,6 +90,7 @@ public class ExcelFileUtil {
         for(int i=0;i<inputStr.length;i++){
             Cell cell = row.createCell(i);
             //设置方格的显示
+            cell.setCellType(HSSFCell.CELL_TYPE_STRING);
             cell.setCellValue(inputStr[i]);
 
         }
@@ -103,7 +107,7 @@ public class ExcelFileUtil {
     }
     public static  void  main(String[] args){
         try {
-            ExcelFileUtil util=new ExcelFileUtil("a.xls");
+            ExcelFileUtil util=new ExcelFileUtil("/home/rock/uumai/upwork/af/a.xls");
             util.writeLine("Column1","Column2","Column3");
             util.writeLine("1","2","3");
             util.createWorkBook();
