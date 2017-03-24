@@ -1,4 +1,4 @@
-# uudatahive（蜂巢爬虫系统）
+# fengchao（蜂巢爬虫系统）
 蜂巢爬虫系统是一套只需要定义XPath，就可实现爬取网站,APP的系统, 支持多种解析方式（XPath,正则表达式），多种下载方式（HttpClient库, PhantomJs, JBrowser, Selenium-Firefox,Chrome ）,多种输出方式（Excel，MongoDB）。 可不做任何修改发布到Yarn,Docker,Mesos系统中实现分布式。
 
 # 爬虫构架
@@ -45,8 +45,8 @@ public class BaiduSearch extends QuartzLocalAppMaster {
 # 下载安装
 ```
 PreCondition:   安装了JDK8, Maven, Git
-git clone https://github.com/kanxg/uudatahive
-cd uudatahive
+git clone https://github.com/kanxg/fengchao
+cd fengchao
 ./bin/buildfengchao.sh             //编译 core
 ./bin/buildapp.sh   example    	   //编译 demo项目
 ```
@@ -69,7 +69,7 @@ mvn eclipse:eclipse  or mvn idea:idea   生成项目
 
 # 开发手册
 
-[[开发手册]](https://kanxg.gitbooks.io/uudatahive/content/)  如何使用蜂巢系统的参考
+[[开发手册]](https://kanxg.gitbooks.io/fengchao/content/)  如何使用蜂巢系统的参考
 
 
 [[Xpath参考]](https://www.gitbook.com/book/kanxg/fengchao_xpath/details) 包含已经解析的Xpath
@@ -89,7 +89,7 @@ mvn eclipse:eclipse  or mvn idea:idea   生成项目
 
 * Worker 拿到任务，初始化，从DownloadFactory构建下载器，下载， 解析，输出；
 
-![image](https://kanxg.gitbooks.io/uudatahive/content/img/uumai_fengchao.png)
+![image](https://kanxg.gitbooks.io/fengchao/content/img/uumai_fengchao.png)
 
 
 # 分布式爬虫原理
@@ -98,7 +98,7 @@ mvn eclipse:eclipse  or mvn idea:idea   生成项目
 
  * AdminAppMaster 提交工作池到分布式系统， 工作池启动，从任务池拿取任务，反序列化tasker， 构建worker，运行任务；
 
- ![image](https://kanxg.gitbooks.io/uudatahive/content/img/uumai_distributed.png)
+ ![image](https://kanxg.gitbooks.io/fengchao/content/img/uumai_distributed.png)
 
  # 提交分布式系统
 

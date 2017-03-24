@@ -16,7 +16,6 @@
 
      <modules>
           <module>uumai-mapreduce</module>
-         <module>uumai-storm</module>   
 
          <!-- currently still not stable, so not open source 
          <module>uumai-yarn</module>-->
